@@ -3,14 +3,346 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>STM32H563 UART Configurable Console | Sai Krishna</title>
+  <meta name="description" content="STM32H563 UART Configurable Console — project write-up by Sai Krishna Singapati">
+  <title>UART Console · Sai Krishna Singapati</title>
   <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .project-page { max-width: 800px; }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .project-page h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 2.5rem 0 0.75rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .project-page p {
+      color: var(--text-muted);
+      font-size: 0.97rem;
+      line-height: 1.75;
+      margin-bottom: 1rem;
+    }
+    .project-page ul {
+      list-style: disc;
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .project-page ul li {
+      color: var(--text-muted);
+      font-size: 0.97rem;
+      line-height: 1.75;
+      margin-bottom: 0.3rem;
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      margin: 1rem 0 1.5rem;
+    }
+    code {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    p code, li code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.1em 0.4em;
+      font-size: 0.82rem;
+      color: var(--accent);
+    }
+    .diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin: 1rem 0 1.5rem;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--accent-dim);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 0.9rem 1.25rem;
+      margin: 1.25rem 0;
+      color: var(--text-muted);
+      font-size: 0.93rem;
+      line-height: 1.65;
+    }
+    .page-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .gh-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      transition: background 0.2s;
+    }
+    .gh-link:hover { background: var(--accent-dim); text-decoration: none; }
+  </style>
 </head>
 <body>
-  <div class="project-page">
-    <a href="../index.html" class="back-link">← Back</a>
-    <h1>STM32H563 UART Configurable Console</h1>
-    <p class="subtitle">Full write-up coming soon. <a href="https://github.com/SaiKrishna498" target="_blank" rel="noopener noreferrer">View source on GitHub →</a></p>
-  </div>
+  <nav id="nav">
+    <div class="container nav-inner">
+      <a href="../index.html" class="nav-logo">sai<span>.</span></a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#projects">Projects</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+        <li><a href="../assets/resume.pdf" class="btn-resume" target="_blank" rel="noopener noreferrer">Resume</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <div class="project-page container">
+      <a href="../index.html#projects" class="back-link">← Back to projects</a>
+
+      <p class="section-label" style="margin-top:2rem;">Project</p>
+      <h1>STM32H563 UART Configurable Console</h1>
+      <p class="subtitle">Runtime peripheral reconfiguration via an interactive serial console</p>
+
+      <div class="meta-row" style="margin-top:1.25rem;">
+        <span class="tag">STM32H563</span>
+        <span class="tag">Embedded C</span>
+        <span class="tag">UART / USART3</span>
+        <span class="tag">STM32 HAL</span>
+        <span class="tag">CMSIS</span>
+        <span class="tag">Interrupt-driven I/O</span>
+      </div>
+
+      <h2>Overview</h2>
+      <p>
+        This project turns a basic UART logging setup into an interactive embedded console on the
+        NUCLEO-H563ZI evaluation board. The firmware accepts typed commands over the ST-LINK virtual
+        COM port and can reconfigure the active UART peripheral at runtime — changing baud rate and
+        frame format while the system keeps running.
+      </p>
+      <p>
+        It was built incrementally across five labs, each adding one layer: non-blocking blink
+        scheduling, interrupt-driven UART TX, button debounce with a 200 ms window, a TX message
+        queue, and finally the full bidirectional console with command parsing and safe peripheral
+        reconfiguration.
+      </p>
+
+      <h2>What the Console Does</h2>
+      <p>
+        After reset, the board starts a <code>&gt;</code> prompt on <code>USART3</code> at
+        <code>115200 8N1</code>. Three commands are supported:
+      </p>
+      <pre><code>&gt; help
+Commands:
+  help
+  uart show
+  uart set &lt;baud&gt; &lt;8n1|8e1|8o1|8n2&gt;
+
+&gt; uart show
+UART console: 115200 8N1
+
+&gt; uart set 9600 8n1
+Applying UART console: 9600 8N1. Update terminal now.
+&gt; </code></pre>
+      <p>
+        After <code>uart set</code>, the board drains any pending TX data, tears down
+        <code>USART3</code>, rebuilds it with the new parameters, and restarts RX interrupt
+        reception. The baud range is <code>1200</code>–<code>1000000</code>; unsupported formats
+        or out-of-range values print a usage error rather than silently failing.
+      </p>
+
+      <h2>Architecture</h2>
+      <p>
+        All I/O is non-blocking. There are no <code>HAL_UART_Transmit</code> blocking calls in the
+        application path — every byte goes through one of two interrupt-driven data structures.
+      </p>
+
+      <div class="diagram">TX path
+──────────────────────────────────────────────────────
+  LogUart("msg")
+    ├─ copy into TX queue  (circular buffer, depth 16)
+    └─ if UART idle → HAL_UART_Transmit_IT()
+  HAL_UART_TxCpltCallback()
+    └─ advance queue tail → start next message
+
+RX path
+──────────────────────────────────────────────────────
+  HAL_UART_RxCpltCallback()
+    ├─ push byte into RX FIFO  (circular buffer, depth 32)
+    └─ restart HAL_UART_Receive_IT() immediately
+
+Main loop
+  └─ ConsoleProcessRx()
+       ├─ pop bytes from FIFO
+       ├─ echo printable chars via LogUart()
+       ├─ backspace removes last char
+       └─ Enter → ConsoleProcessCommand()</div>
+
+      <div class="callout">
+        The RX FIFO decouples the ISR from the main loop — the ISR stays short (push + restart),
+        and the main loop handles all string building and parsing without dropping bytes during
+        longer TX operations.
+      </div>
+
+      <h2>Interrupt-safe TX queue</h2>
+      <p>
+        The TX queue is shared between the main loop (writers) and the TX-complete ISR (reader).
+        The critical section is kept as short as possible — just an index read, a pointer snapshot,
+        and a flag set before re-enabling interrupts:
+      </p>
+      <pre><code>static void UartLogStartTxIfIdle(void)
+{
+  __disable_irq();
+  if ((g_uart_tx_busy != 0U) || (g_uart_log_head == g_uart_log_tail))
+  {
+    __enable_irq();
+    return;                          /* nothing to send */
+  }
+  g_uart_tx_busy = 1U;
+  tail_local = g_uart_log_tail;
+  len = (uint16_t)strlen(g_uart_log_queue[tail_local]);
+  __enable_irq();
+
+  HAL_UART_Transmit_IT(&huart3,
+      (uint8_t *)g_uart_log_queue[tail_local], len);
+}</code></pre>
+
+      <h2>Safe UART reconfiguration</h2>
+      <p>
+        Changing UART settings while bytes are in-flight corrupts the link. The reconfiguration
+        sequence calls <code>UartWaitForTxDrain()</code> before touching the peripheral, then
+        tears it down and rebuilds it cleanly:
+      </p>
+      <pre><code>static HAL_StatusTypeDef ConsoleApplyUartConfig(
+    uint32_t baud_rate, uint32_t word_length,
+    uint32_t parity,    uint32_t stop_bits)
+{
+  HAL_UART_AbortReceive_IT(&huart3);    /* stop RX interrupt */
+  HAL_UART_DeInit(&huart3);            /* tear down */
+
+  huart3.Init.BaudRate   = baud_rate;
+  huart3.Init.WordLength = word_length;
+  huart3.Init.Parity     = parity;
+  huart3.Init.StopBits   = stop_bits;
+  /* ... remaining Init fields ... */
+
+  HAL_UART_Init(&huart3);
+
+  /* STM32H5 FIFO settings must be restored after reinit */
+  HAL_UARTEx_SetTxFifoThreshold(&huart3, UART_TXFIFO_THRESHOLD_1_8);
+  HAL_UARTEx_SetRxFifoThreshold(&huart3, UART_RXFIFO_THRESHOLD_1_8);
+  HAL_UARTEx_DisableFifoMode(&huart3);
+
+  StartConsoleRx();                    /* restart RX interrupt */
+  return HAL_OK;
+}</code></pre>
+      <div class="callout">
+        The STM32H5 series has hardware FIFO on USART peripherals. After <code>HAL_UART_Init</code>
+        the FIFO thresholds and mode must be restored explicitly — they are not preserved by the
+        HAL reinit path. Missing this step causes the peripheral to come up in an unexpected state.
+        It required a careful read of the reference manual to track down.
+      </div>
+
+      <h2>Command parser</h2>
+      <p>
+        The parser tokenizes a local copy of the line with <code>strtok</code> and validates each
+        field before applying any change. Bad inputs get a specific error message rather than a
+        silent failure:
+      </p>
+      <pre><code>baud_rate = strtoul(baud_token, &amp;end_ptr, 10);
+if ((*baud_token == '\0') || (*end_ptr != '\0')
+    || (baud_rate &lt; 1200U) || (baud_rate &gt; 1000000U))
+{
+  LogUart("Baud must be an integer in the range 1200..1000000.\r\n");
+  return;
+}
+
+if (ConsoleTryParseFormat(format_token, &amp;word_length,
+                          &amp;parity, &amp;stop_bits, &amp;format_name) == 0U)
+{
+  LogUart("Format must be one of: 8n1, 8e1, 8o1, 8n2.\r\n");
+  return;
+}</code></pre>
+
+      <h2>Build &amp; Flash</h2>
+      <p>Developed in STM32CubeIDE on the NUCLEO-H563ZI board (ST-LINK/V3 on-board).</p>
+      <ul>
+        <li>Import the project: <strong>File → Import → Existing Projects into Workspace</strong></li>
+        <li>Build: <strong>Project → Build All</strong></li>
+        <li>Flash: <strong>Run → Debug</strong> (or Run)</li>
+        <li>Open a serial terminal at <code>115200 8N1</code> on the ST-LINK VCP port</li>
+        <li>Reset the board — the <code>&gt;</code> prompt should appear</li>
+      </ul>
+
+      <h2>What I Learned</h2>
+      <ul>
+        <li>Structuring a circular queue so ISR and main loop share it safely with minimal
+            critical section time</li>
+        <li>The STM32H5 FIFO quirk: <code>HAL_UART_Init</code> does not restore extended FIFO
+            settings — they must be set again after every reinit</li>
+        <li>How to drain a TX queue before a peripheral teardown without spinning with interrupts
+            disabled</li>
+        <li>Defensive input parsing: reject bad baud values, reject extra tokens, always print
+            actionable error messages</li>
+      </ul>
+
+      <h2>Possible Next Steps</h2>
+      <ul>
+        <li>Store UART settings in flash so they survive a power cycle</li>
+        <li>Switch from one-byte-at-a-time RX interrupts to DMA + idle-line detection for higher
+            throughput</li>
+        <li>Add a <code>factory reset</code> command to return to <code>115200 8N1</code></li>
+        <li>Add a dropped-message counter to detect TX queue saturation under load</li>
+      </ul>
+
+      <div class="page-links">
+        <a href="../index.html#projects" class="back-link" style="margin:0">← All projects</a>
+        <a href="https://github.com/SaiKrishna498/Nucleo-H563-UART-Console"
+           target="_blank" rel="noopener noreferrer" class="gh-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer id="footer">
+    <div class="container footer-inner">
+      <p>Built with HTML &amp; CSS · Hosted on GitHub Pages</p>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
 </body>
 </html>
