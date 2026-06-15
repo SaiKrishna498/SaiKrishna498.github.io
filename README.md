@@ -2,12 +2,13 @@
 
 Personal portfolio — Sai Krishna Singapati, Embedded Firmware Engineer.
 
+Live at: https://SaiKrishna498.github.io
+
 ## Setup
 
 1. Create a GitHub repo named `<username>.github.io`
 2. Copy this folder's contents into that repo and push to `main`
 3. Enable GitHub Pages: repo Settings → Pages → Source: main branch
-4. Live at `https://<username>.github.io`
 
 ## Adding a new project
 
