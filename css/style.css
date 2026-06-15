@@ -161,6 +161,37 @@ h2.section-title {
   display: flex;
   align-items: center;
 }
+.hero-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  width: 100%;
+  padding: 4rem 0;
+}
+.hero-text { flex: 1; min-width: 0; }
+.hero-photo-wrap {
+  flex-shrink: 0;
+}
+.hero-photo {
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 40px rgba(0, 212, 170, 0.15);
+}
+@media (max-width: 768px) {
+  .hero-inner {
+    flex-direction: column-reverse;
+    text-align: center;
+    padding-top: 3rem;
+  }
+  .hero-photo { width: 180px; height: 180px; }
+  .hero-tagline { margin-left: auto; margin-right: auto; }
+  .hero-ctas { justify-content: center; }
+}
 .hero-greeting {
   font-family: var(--mono);
   color: var(--accent);
