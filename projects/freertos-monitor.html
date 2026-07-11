@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FreeRTOS System Monitor on STM32H563 — project write-up by Sai Krishna Singapati">
+  <title>FreeRTOS System Monitor · Sai Krishna Singapati</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .project-page { max-width: 800px; }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .project-page h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 2.5rem 0 0.75rem;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .project-page p {
+      color: var(--text-muted);
+      font-size: 0.97rem;
+      line-height: 1.75;
+      margin-bottom: 1rem;
+    }
+    .project-page ul {
+      list-style: disc;
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .project-page ul li {
+      color: var(--text-muted);
+      font-size: 0.97rem;
+      line-height: 1.75;
+      margin-bottom: 0.3rem;
+    }
+    .project-page table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.9rem;
+    }
+    .project-page th, .project-page td {
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+    .project-page th {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      margin: 1rem 0 1.5rem;
+    }
+    code {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    p code, li code, td code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.1em 0.4em;
+      font-size: 0.82rem;
+      color: var(--accent);
+    }
+    .diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin: 1rem 0 1.5rem;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--accent-dim);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 0.9rem 1.25rem;
+      margin: 1.25rem 0;
+      color: var(--text-muted);
+      font-size: 0.93rem;
+      line-height: 1.65;
+    }
+    .page-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .gh-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      transition: background 0.2s;
+    }
+    .gh-link:hover { background: var(--accent-dim); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <nav id="nav">
+    <div class="container nav-inner">
+      <a href="../index.html" class="nav-logo">sai<span>.</span></a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#skills">Skills</a></li>
+        <li><a href="../index.html#projects">Projects</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+        <li><a href="../assets/resume.pdf" class="btn-resume" target="_blank" rel="noopener noreferrer">Resume</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <div class="project-page container">
+      <a href="../index.html#projects" class="back-link">← Back to projects</a>
+
+      <p class="section-label" style="margin-top:2rem;">Project</p>
+      <h1>FreeRTOS System Monitor</h1>
+      <p class="subtitle">Seven preemptively-scheduled tasks on an STM32H563 Nucleo, with a live CLI to watch the scheduler work</p>
+
+      <div class="meta-row" style="margin-top:1.25rem;">
+        <span class="tag">FreeRTOS</span>
+        <span class="tag">STM32H563</span>
+        <span class="tag">Cortex-M33</span>
+        <span class="tag">Embedded C</span>
+        <span class="tag">Task Notifications</span>
+        <span class="tag">Queues</span>
+        <span class="tag">Stream Buffers</span>
+        <span class="tag">Event Groups</span>
+      </div>
+
+      <h2>Overview</h2>
+      <p>
+        A FreeRTOS demo running on the STM32H563ZI Nucleo board (Cortex-M33, 250 MHz) — no
+        extra hardware needed beyond the board and a USB cable. Seven tasks run at the same
+        time: they blink a heartbeat LED, measure how precisely the scheduler wakes tasks up,
+        watch each other's health, and expose all of it through a command line over the USB
+        serial port.
+      </p>
+
+      <h2>Try it</h2>
+      <ol style="padding-left:1.5rem; margin-bottom:1rem;">
+        <li style="color:var(--text-muted); font-size:0.97rem; line-height:1.75; margin-bottom:0.3rem;">Import the project in STM32CubeIDE, build, and flash.</li>
+        <li style="color:var(--text-muted); font-size:0.97rem; line-height:1.75; margin-bottom:0.3rem;">Open a serial terminal (PuTTY, Tera Term...) on the ST-LINK COM port, <code>115200 baud</code>.</li>
+        <li style="color:var(--text-muted); font-size:0.97rem; line-height:1.75; margin-bottom:0.3rem;">Type <code>help</code>.</li>
+      </ol>
+      <pre><code>h563&gt; stats        &lt;- table of all tasks: who is running, using CPU, stack left
+h563&gt; latency      &lt;- how precisely tasks wake up (measured in microseconds)
+h563&gt; mode load    &lt;- make the worker task burn CPU, then check stats again</code></pre>
+      <p>
+        Or just press the blue USER button — it cycles through the modes. LEDs: <strong>green</strong>
+        blinking = system alive · <strong>yellow</strong> = a special mode is active ·
+        <strong>red</strong> = a task stopped responding (or a fatal error).
+      </p>
+
+      <h2>The tasks</h2>
+      <table>
+        <tr><th>Task</th><th>Priority</th><th>What it does</th></tr>
+        <tr><td><code>latency</code></td><td>5 (highest)</td><td>Wakes up exactly every 1&nbsp;ms and measures how late it actually woke up, using the CPU's cycle counter — the "how real-time are we?" probe.</td></tr>
+        <tr><td><code>button</code></td><td>4</td><td>Sleeps until you press the blue button, then switches the system mode.</td></tr>
+        <tr><td><code>superv</code></td><td>3</td><td>The watchdog. Every task must report in every 3 seconds — if one goes silent, the red LED turns on.</td></tr>
+        <tr><td><code>cli</code></td><td>2</td><td>Reads what you type in the terminal and runs your commands.</td></tr>
+        <tr><td><code>logger</code></td><td>2</td><td>The only task allowed to print. Everyone else hands it messages, so output never gets scrambled.</td></tr>
+        <tr><td><code>heartbeat</code></td><td>1</td><td>Blinks the green LED every 500&nbsp;ms. If it stops blinking, the scheduler is in trouble.</td></tr>
+        <tr><td><code>worker</code></td><td>1 (lowest)</td><td>Normally idle. In LOAD mode it does heavy math on purpose, so CPU usage shift is visible in <code>stats</code> while higher-priority tasks stay unaffected.</td></tr>
+      </table>
+      <p>
+        Higher priority always wins: when the worker is burning CPU, the latency task still
+        wakes up on time because it outranks the worker. That's the whole point of an RTOS,
+        and it's visible live with <code>latency</code>.
+      </p>
+
+      <h2>FreeRTOS features used, where, and why</h2>
+      <table>
+        <tr><th>Feature</th><th>Where</th><th>Why this one</th></tr>
+        <tr><td>Task notification</td><td>button ISR → <code>button</code> task</td><td>Fastest, lightest way to signal one task from an interrupt — cheaper than a queue or semaphore.</td></tr>
+        <tr><td>Queue (of structs)</td><td>all tasks → <code>logger</code>; <code>button</code> → <code>worker</code></td><td>Carries whole messages safely between tasks. One owner of the UART fed by a queue is the <em>gatekeeper pattern</em> — it avoids a mutex around a slow peripheral.</td></tr>
+        <tr><td>Stream buffer</td><td>UART RX interrupt → <code>cli</code> task</td><td>Made exactly for byte streams with one reader — a perfect fit for characters arriving one at a time.</td></tr>
+        <tr><td>Event group</td><td>tasks → <code>superv</code></td><td>Lets the watchdog wait for <em>all</em> health bits at once with a single timeout, instead of one semaphore per task.</td></tr>
+        <tr><td><code>vTaskDelayUntil</code></td><td><code>latency</code> task</td><td>Gives a fixed wake-up rhythm with no drift, unlike <code>vTaskDelay</code> which drifts by however long the work took.</td></tr>
+        <tr><td>Priorities + preemption</td><td>everywhere</td><td>The scheduler always runs the highest-priority ready task — proven live by the worker-vs-latency demo.</td></tr>
+        <tr><td>Run-time statistics</td><td><code>stats</code> command</td><td>Per-task CPU % and unused stack, driven by the CPU cycle counter.</td></tr>
+        <tr><td>Stack overflow + malloc hooks</td><td><code>app_main.c</code></td><td>A blown stack or exhausted heap turns on the red LED with a message instead of a silent crash.</td></tr>
+      </table>
+
+      <h2>A note on the kernel</h2>
+      <p>
+        ST doesn't offer FreeRTOS for the H5 series in CubeMX, so the kernel (V11.3.0) is
+        included as source in <code>Middlewares/</code> and integrated by hand: the Cortex-M33
+        port owns the SysTick interrupt, and the HAL gets its millisecond tick from the DWT
+        cycle counter instead.
+      </p>
+      <div class="callout">
+        CubeMX doesn't know FreeRTOS is there. After regenerating code from the <code>.ioc</code>
+        file, two hand-written pieces have to be restored: the <code>SVC_Handler</code>,
+        <code>PendSV_Handler</code>, and <code>SysTick_Handler</code> in
+        <code>stm32h5xx_it.c</code> (the FreeRTOS port provides these), and the
+        <code>BSP_PB_Callback</code> in <code>main.c</code> (lives in
+        <code>App/Src/control.c</code>).
+      </div>
+
+      <h2>Where the code lives</h2>
+      <div class="diagram">App/Src/        the interesting part - one file per feature area
+  app_main.c    startup, kernel hooks, HAL tick retarget
+  logger.c      gatekeeper logger (queue)
+  cli.c         command line (stream buffer)
+  control.c     button, modes, worker, heartbeat
+  monitor.c     latency probe + watchdog (event group)
+Core/           CubeMX-generated board setup + FreeRTOSConfig.h
+Middlewares/    FreeRTOS kernel source (unmodified)
+Drivers/        ST HAL + Nucleo board support (generated)</div>
+
+      <h2>What I Learned</h2>
+      <ul>
+        <li>Hand-integrating a FreeRTOS port ST doesn't officially support in CubeMX, including
+            retargeting the HAL tick to the DWT cycle counter</li>
+        <li>Picking the right primitive for each job — task notification vs. queue vs. stream
+            buffer vs. event group — instead of reaching for one tool everywhere</li>
+        <li>The gatekeeper pattern for shared peripherals: one task owns the UART, everyone else
+            sends it messages through a queue</li>
+        <li><code>vTaskDelayUntil</code> vs. <code>vTaskDelay</code>: fixed-rhythm wake-ups versus
+            wake-ups that drift with execution time</li>
+        <li>Making failures visible — stack overflow and malloc-failed hooks that light an LED
+            instead of failing silently</li>
+      </ul>
+
+      <h2>Possible Next Steps</h2>
+      <ul>
+        <li>Log latency samples to flash for post-run histogram analysis</li>
+        <li>Add a low-power tickless idle mode and measure its effect on latency</li>
+        <li>Extend the watchdog to attempt task-level recovery instead of just flagging red</li>
+      </ul>
+
+      <div class="page-links">
+        <a href="../index.html#projects" class="back-link" style="margin:0">← All projects</a>
+        <a href="https://github.com/SaiKrishna498/FreeRTOS_project"
+           target="_blank" rel="noopener noreferrer" class="gh-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer id="footer">
+    <div class="container footer-inner">
+      <p>Built with HTML &amp; CSS · Hosted on GitHub Pages</p>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>
